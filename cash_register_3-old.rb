@@ -12,7 +12,6 @@ end
 def extract_csv_info
   menu = {}
   CSV.foreach('products.csv', headers: true) do |row|
-    binding.pry
     #create variables
     sku = row["SKU"]
     name = row["name"]
