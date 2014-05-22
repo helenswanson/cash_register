@@ -7,8 +7,17 @@ def force_2decimals(value)
   '%.2f' % value
 end
 
-#take out information from products.csv
-#creates menu hash w/ sky key for name/wholesale/price
+def ask_how_many()
+  puts "How many?\n"
+  gets.chomp
+end
+
+def gets_amount(amount_type)
+  puts "What is the #{amount_type}?"
+  gets.chomp
+end
+
+#extract csv info into an array of hashes
 def extract_csv_info
   menu = []
   CSV.foreach('products.csv', headers: true) do |row|
@@ -17,8 +26,6 @@ def extract_csv_info
     row["retail_price"] = row["retail_price"].to_f
     menu << row
   end
-  #menu = [{"SKU": 120945, "name": Light, "wholesale_prices": 2.5, "retail_price": 5}
-  #      , {"SKU": 679340, "name": Medium, "wholesale_prices": 3.25, "retail_prices": 7.50},...}
   menu
 end
 
@@ -39,62 +46,24 @@ def show_menu(menu)
   count
 end
 
-def ask_how_many()
-  puts "How many?\n"
-  gets.chomp
-end
-
-def add_to_order(menu, selection, cust_order, how_many)
-  result = []
-
-  cust_order.each do|product|
-
-
-    # #if item sku in menu isn't in customer order, add sku and how_many to order in hash
-    # if menu[selection-1]["SKU"] != product["SKU"]
-    #   cust_order << {"SKU" => menu[selection-1]["SKU"], "units_sold" => how_many}
-    # #else add how_many to units for appropriate sku
-    # else
-    #   #find appropriate sku and...#######################################
-
-    #   #adds how_many to current number of units
-    #   product["units_sold"] += how_many
-    # end
-  end
-  #array of hashes where key = sku, values = units sold
-  result
-end
-
-
-
 #outputs a list of items purchased: cost/#/type
 def show_order(cust_order, menu)
   puts "===Sale Complete===\n\n"
 
+  #for every item in cust_order, print out subtotal, quantity, and name
   cust_order.each do |sku, quantity|
-
-    product_info = menu.select{|item| item["SKU"]==sku}.first
+    product_info = menu.select{|item| item["SKU"].to_i==sku}.first
     item_subtotal = force_2decimals(quantity.to_i * product_info["retail_price"])
     name = product_info["name"]
     puts "$#{item_subtotal} - #{quantity} #{name}"
   end
 end
 
-
-def calculate_subtotal(menu, selection, how_many)
-  #subtotal = cost of selection * how_many
-   # menu.each do |product|
-   #  price = force_2decimals(product["retail_price"])
-   #  name = product["name"]
+def write_csv()
 end
 
+#=======================================================================
 
-
-#=============================================
-
-#take out information from products.csv
-#extract_info returns menu hash w/ sky key for name/wholesale/price
-#show_menu takes menu and prints out welcome and menu options
 final_total = 0
 line_items = []
 cust_order = {}
@@ -110,7 +79,6 @@ while true
   if selection == options
     break
   end
-
   #if the selection is invalid, output sorry message
   if selection > options or selection == 0
     puts "Sorry, that option isn't available.\n\n"
@@ -124,7 +92,7 @@ while true
         puts "Sorry, that option isn't available.\n\n"
         how_many = ask_how_many()
       end
-      #store information in array
+      #store information in line_items array
       line_items << [selection, how_many]
 
       price = menu[selection-1]["retail_price"]
@@ -137,20 +105,32 @@ end
 
 #cust_order contains sku key and quantity value
 line_items.each do |selection, quantity|
-  sku = menu[selection-1]["SKU"]
+  sku = menu[selection-1]["SKU"].to_i
   if cust_order.has_key?(sku)
-    cust_order[sku] += quantity
+    cust_order[sku] += quantity.to_i
   else
-    cust_order[sku] = quantity
+    cust_order[sku] = quantity.to_i
   end
 end
 
-
+#output complete sale!
+#show_order outputs a list of items purchased: cost/#/type
 show_order(cust_order, menu)
 puts "Total: $#{force_2decimals(final_total)}"
 
-#output complete sale!
-#show_order outputs a list of items purchased: cost/#/type
+#prompt for amount tendered
+amount_tendered = gets_amount("amount tendered").to_f
+change = amount_tendered - final_total
+
+#while money owed, display warning and ask for amount again
+while amount_tendered < final_total
+    change = force_2decimals(change).to_f.abs
+    puts "WARNING: Customer still owes $#{force_2decimals(change)}"
+    amount_tendered = gets_amount("amount tendered").to_f
+    change = amount_tendered - final_total
+end
+
+change = force_2decimals(change.abs)
 
 puts "===Thank You!==="
 puts "The total change due is $#{change}\n\n"
@@ -158,5 +138,5 @@ puts "The total change due is $#{change}\n\n"
 puts Time.now.strftime("%m/%d/%Y %l:%M%p")
 puts "================"
 
-
+write_csv()
 
