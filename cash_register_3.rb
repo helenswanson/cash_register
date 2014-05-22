@@ -59,7 +59,15 @@ def show_order(cust_order, menu)
   end
 end
 
-def write_csv()
+#write csv to a new file
+#cust_order is a hash with sku key and units value
+def write_csv(cust_order)
+  #add sku and units to exported hash
+  CSV.open("final_cust_order.csv", "a") do |file|
+    cust_order.to_a.each do |item_info|
+      file << item_info
+    end
+  end
 end
 
 #=======================================================================
@@ -138,5 +146,5 @@ puts "The total change due is $#{change}\n\n"
 puts Time.now.strftime("%m/%d/%Y %l:%M%p")
 puts "================"
 
-write_csv()
+write_csv(cust_order)
 
