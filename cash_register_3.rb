@@ -87,7 +87,7 @@ end
 #show_menu takes menu and prints out welcome and menu options
 final_total = 0
 line_items = []
-cust_order = []
+cust_order = {}
 menu = extract_csv_info
 #options max menu options
 options = show_menu(menu)
@@ -125,8 +125,18 @@ while true
   end
 end
 
-binding.pry
+
 show_order
+
+line_items.each do |selection, quantity|
+  sku = menu[selection-1]["SKU"]
+  if cust_order.has_key?(sku)
+    cust_order[sku] += quantity
+  else
+    cust_order[sku] = quantity
+  end
+end
+binding.pry
 
 #output complete sale!
 #show_order outputs a list of items purchased: cost/#/type
