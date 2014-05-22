@@ -68,8 +68,18 @@ end
 
 
 #outputs a list of items purchased: cost/#/type
-def show_order
+def show_order(cust_order, menu)
+  puts "===Sale Complete===\n\n"
+
+  cust_order.each do |sku, quantity|
+
+    product_info = menu.select{|item| item["SKU"]==sku}.first
+    item_subtotal = force_2decimals(quantity.to_i * product_info["retail_price"])
+    name = product_info["name"]
+    puts "$#{item_subtotal} - #{quantity} #{name}"
+  end
 end
+
 
 def calculate_subtotal(menu, selection, how_many)
   #subtotal = cost of selection * how_many
@@ -103,7 +113,7 @@ while true
 
   #if the selection is invalid, output sorry message
   if selection > options or selection == 0
-    puts "Sorry, that option isn't available.\n"
+    puts "Sorry, that option isn't available.\n\n"
   else
     #while the transaction is still going
     if selection != options
@@ -111,7 +121,7 @@ while true
       how_many = ask_how_many()
       #if how_many isn't a valid number, re-ask how many
       while how_many != how_many.to_i.to_s
-        puts "Sorry, that option isn't available.\n"
+        puts "Sorry, that option isn't available.\n\n"
         how_many = ask_how_many()
       end
       #store information in array
@@ -120,14 +130,12 @@ while true
       price = menu[selection-1]["retail_price"]
       subtotal = price * how_many.to_f
       final_total += subtotal
-      puts "Subtotal: $#{force_2decimals(final_total)}\n"
+      puts "Subtotal: $#{force_2decimals(final_total)}\n\n"
     end
   end
 end
 
-
-show_order
-
+#cust_order contains sku key and quantity value
 line_items.each do |selection, quantity|
   sku = menu[selection-1]["SKU"]
   if cust_order.has_key?(sku)
@@ -136,13 +144,16 @@ line_items.each do |selection, quantity|
     cust_order[sku] = quantity
   end
 end
-binding.pry
+
+
+show_order(cust_order, menu)
+puts "Total: $#{force_2decimals(final_total)}"
 
 #output complete sale!
 #show_order outputs a list of items purchased: cost/#/type
-show_order
+
 puts "===Thank You!==="
-puts "The total change due is $#{change}\n"
+puts "The total change due is $#{change}\n\n"
 #output time in the format 02/12/2013 5:50PM
 puts Time.now.strftime("%m/%d/%Y %l:%M%p")
 puts "================"
